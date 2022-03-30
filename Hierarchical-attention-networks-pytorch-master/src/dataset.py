@@ -45,7 +45,7 @@ class MyDataset(Dataset):
         self.max_length_sentences = max_length_sentences
         self.max_length_word = max_length_word
         self.num_classes = len(set(self.labels))
-        print("context size", len(contexts))
+        print("first reply", replies[0])
 
     def __len__(self):
         return len(self.labels)

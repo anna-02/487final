@@ -43,16 +43,5 @@ class FFNN(nn.Module):
         x = torch.cat((cont_out, rep_out), dim=1).requires_grad_(True)
         x = self.fc(x)
         output = F.softmax(x)
-        #output, inds = torch.max(output, dim=1)
-        #print("softmax first?? OUT", output.shape)
-        #output = element_wise_mul(f_output, output.permute(1, 0)).squeeze(0)
 
-        #x = self.fc(x)
-
-        #print("***** real OUT val of bev hills", output)
-
-        #output = torch.tensor(output)
-        # $output.requires_grad=True
-
-        # rint(output.shape)
         return output

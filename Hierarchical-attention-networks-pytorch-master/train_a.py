@@ -24,6 +24,9 @@ import torch.optim as optimizer
 import matplotlib.pyplot as plt
 from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence, pad_packed_sequence
 from torch.utils.data import DataLoader
+from sklearn.metrics import f1_score
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score
 
 
 def get_loss_fn():
@@ -32,7 +35,7 @@ def get_loss_fn():
     nn.CrossEntropyLoss()
     Hint: nn.BCEWithLogitsLoss
     """
-    return nn.BCEWithLogitsLoss()
+    return nn.CrossEntropyLoss()
 
 
 def calculate_loss(logits, labels, loss_fn):
@@ -99,8 +102,8 @@ def train_model():
     # Initialize:
     # -------------------------------------
 
-    num_epoch = 30
-    patience = 20
+    num_epoch = 10
+    patience = 5
     collect_cycle = 30
     device = 'cpu'
     verbose = True
@@ -112,7 +115,7 @@ def train_model():
 
     torch.manual_seed(0)
 
-    device = 'cuda'
+    #device = 'cuda'
 
     np.random.seed(0)
     if torch.cuda.is_available():
@@ -147,16 +150,17 @@ def train_model():
     if verbose:
         print('------------------------ Start Training ------------------------')
     t_start = time.time()
-    for epoch in range(num_epoch):
+    for epoch in tqdm(range(num_epoch)):
         # Training:
         net.train()
-        for iter, (reply, context, labels) in enumerate(training_generator):
+        for iter, (reply, context, labels) in enumerate(tqdm(training_generator)):
             num_itr += 1
             loss = None
             ############ TODO: calculate loss, update weights ############
-            context = [i.to(device) for i in context]
-            reply = [i.to(device) for i in reply]
-            labels = [i.to(device) for i in labels]
+            # convert these to tensors when switching to colab!!!
+            # context = [i.to(device) for i in context]
+            # reply = [i.to(device) for i in reply]
+            # labels = [i.to(device) for i in labels]
             # print("reply", reply)
             # print("context", context)
             # print("label", labels)
@@ -164,22 +168,24 @@ def train_model():
             optim.zero_grad()
             net._init_hidden_state()
             logits = net(reply, context)
+
+            if(num_itr == 1):
+                print("logits", logits)
             # print(logits.shape)
-            #print("LOGITS*******", logits)
 
             flogits = logits[:, 1].flatten()
             flogits = 1 - flogits
+
             #flogits = flogits.float()
-            #print("fLOGITS*******", flogits.shape)
+            # print("fLOGITS*******", flogits.shape)
             # print("lbels*******", labels.shape)
             # fake bin classification stuff for cross entropy loss
 
             ns_labels = 1-labels
-
             stacked_labels = torch.stack((ns_labels, labels))
             loss_labels = torch.transpose(stacked_labels, 0, 1).float()
 
-            loss = calculate_loss(flogits, labels.float(), loss_fn)
+            loss = calculate_loss(logits, loss_labels.float(), loss_fn)
             loss.backward()
             optim.step()
 
@@ -199,15 +205,23 @@ def train_model():
             ))
 
         # Validation:
-        accuracy, loss = get_performance(net, loss_fn, val_generator, device)
+        accuracy, precision, recall, f1, loss = get_performance(
+            net, loss_fn, val_generator, device)
         val_loss.append(loss)
         val_loss_ind.append(num_itr)
         if verbose:
             print("Validation accuracy: {:.4f}".format(accuracy))
+            print("Validation precision: {:.4f}".format(precision))
+            print("Validation recall: {:.4f}".format(recall))
+            print("Validation f1 score: {:.4f}".format(f1))
             print("Validation loss: {:.4f}".format(loss))
+
         if accuracy > best_accuracy:
             best_model = copy.deepcopy(net)
             best_accuracy = accuracy
+            best_acc_precision = accuracy
+            best_acc_recall = recall
+            best_acc_f1 = f1
             num_bad_epoch = 0
         else:
             num_bad_epoch += 1
@@ -228,6 +242,9 @@ def train_model():
              'val_loss': val_loss,
              'val_loss_ind': val_loss_ind,
              'accuracy': best_accuracy,
+             'precision': best_acc_precision,
+             'recall': best_acc_recall,
+             'f1 score': best_acc_f1,
              }
 
     return best_model, stats
@@ -259,16 +276,21 @@ def get_performance(net, loss_fn, data_loader, device, prediction_file='predicti
             pred = None  # predictions for this battch
 
             ######## TODO: calculate loss, get predictions #########
-            context = [i.to(device) for i in context]
-            reply = [i.to(device) for i in reply]
-            labels = [i.to(device) for i in labels]
+            # context = [i.to(device) for i in context]
+            # reply = [i.to(device) for i in reply]
+            # labels = [i.to(device) for i in labels]
 
             net._init_hidden_state(len(labels))
             logits = net(reply, context)
-            #print("logits in val sec", logits)
+            print("logits ", logits)
             t_flogits = logits[:, 1].flatten()
-            t_flogits = 1 - t_flogits
-            loss = calculate_loss(t_flogits, labels.float(), loss_fn)
+            # t_flogits = 1 - t_flogits
+
+            ns_labels = 1-labels
+            stacked_labels = torch.stack((ns_labels, labels))
+            loss_labels = torch.transpose(stacked_labels, 0, 1).float()
+
+            loss = calculate_loss(logits, loss_labels.float(), loss_fn)
 
             pred = []
             #sig = nn.Sigmoid()
@@ -276,11 +298,14 @@ def get_performance(net, loss_fn, data_loader, device, prediction_file='predicti
             # probs = logits.cpu()
             pred = torch.round(t_flogits)
 
-            pred = [i.to(device)for i in pred]
+            # TODO: ADD BACK IN FOR COLLAB
+            #pred = [i.to(device)for i in pred]
             #pred = torch.stack(pred)
 
             #pred = torch.stack(pred)
-            # print(pred)
+            print("tflogits", t_flogits)
+            print("pedictions:", pred)
+            print("labels:", labels)
 
             ###################### End of your code ######################
 
@@ -293,11 +318,15 @@ def get_performance(net, loss_fn, data_loader, device, prediction_file='predicti
 
     accuracy = (y_true == y_pred).sum() / y_pred.shape[0]
     total_loss = sum(total_loss) / len(total_loss)
+    f1 = f1_score(y_true, y_pred, average='micro')
+    precision = precision_score(y_true, y_pred, average='micro')
+    recall = recall_score(y_true, y_pred, average='micro')
+
     # save predictions
     if prediction_file is not None:
         torch.save(y_pred, prediction_file)
 
-    return accuracy, total_loss
+    return accuracy, precision, recall, f1, total_loss
 
 
 def plot_loss(stats):
