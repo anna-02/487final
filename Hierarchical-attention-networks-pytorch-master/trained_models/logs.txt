@@ -1,0 +1,1 @@
+Model's parameters: {'batch_size': 128, 'num_epoches': 100, 'lr': 0.1, 'momentum': 0.9, 'word_hidden_size': 50, 'sent_hidden_size': 50, 'es_min_delta': 0.0, 'es_patience': 5, 'train_set': 'data/train.csv', 'test_set': 'data/test.csv', 'test_interval': 1, 'word2vec_path': 'data/glove.6B.50d.txt', 'log_path': 'tensorboard/han_voc', 'saved_path': 'trained_models'}
