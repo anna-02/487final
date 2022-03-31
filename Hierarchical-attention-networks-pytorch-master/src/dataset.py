@@ -45,7 +45,6 @@ class MyDataset(Dataset):
         self.max_length_sentences = max_length_sentences
         self.max_length_word = max_length_word
         self.num_classes = len(set(self.labels))
-        print("first reply", replies[0])
 
     def __len__(self):
         return len(self.labels)
@@ -101,7 +100,6 @@ class MyDataset(Dataset):
         document_encode += 1
 
         reply_ = document_encode.astype(np.int64)
-
         return reply_, context_, label
 
 

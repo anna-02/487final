@@ -14,6 +14,7 @@ from src.final_fnn_model import FFNN
 from tensorboardX import SummaryWriter
 import argparse
 import shutil
+import itertools
 from nltk.tokenize import word_tokenize
 from tqdm import tqdm
 import torch
@@ -82,7 +83,7 @@ def get_hyper_parameters():
     return hidden_dim, lr, weight_decay
 
 
-def train_model():
+def train_model(net, training_generator, val_generator, batch_size, optim):
     """
     Train the model
     Input:
@@ -111,7 +112,6 @@ def train_model():
     num_itr = 0
     best_model, best_accuracy = None, 0
     num_bad_epoch = 0
-    batch_size = 8
 
     torch.manual_seed(0)
 
@@ -120,29 +120,6 @@ def train_model():
     np.random.seed(0)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(0)
-
-    training_params = {"batch_size": batch_size,
-                       "shuffle": True,
-                       "drop_last": True}
-    test_params = {"batch_size": batch_size,
-                   "shuffle": False,
-                   "drop_last": False}
-
-    # max_word_length, max_sent_length = get_max_lengths(train_set)
-    max_word_length = 20
-    max_sent_length = 50
-    training_set = MyDataset(
-        train_set, word2vec_path, max_sent_length, max_word_length)
-    training_generator = DataLoader(training_set, **training_params)
-    val_generator = DataLoader(training_set, **training_params)
-    testing_set = MyDataset(test_set, word2vec_path,
-                            max_sent_length, max_word_length)
-    test_generator = DataLoader(test_set, **test_params)
-
-    net = FFNN(training_set.num_classes,
-               max_sent_length, max_word_length)
-    net.to(device)
-    optim = get_optimizer(net, lr=1e-3, weight_decay=0)
 
     scheduler = torch.optim.lr_scheduler.LinearLR(optim, start_factor=1.0,
                                                   end_factor=0, total_iters=20)
@@ -169,8 +146,8 @@ def train_model():
             net._init_hidden_state()
             logits = net(reply, context)
 
-            if(num_itr == 1):
-                print("logits", logits)
+            # if(num_itr == 1):
+            print("logits", logits)
             # print(logits.shape)
 
             flogits = logits[:, 1].flatten()
@@ -282,7 +259,7 @@ def get_performance(net, loss_fn, data_loader, device, prediction_file='predicti
 
             net._init_hidden_state(len(labels))
             logits = net(reply, context)
-            print("logits ", logits)
+            # print("logits ", logits)
             t_flogits = logits[:, 1].flatten()
             # t_flogits = 1 - t_flogits
 
@@ -329,6 +306,38 @@ def get_performance(net, loss_fn, data_loader, device, prediction_file='predicti
     return accuracy, precision, recall, f1, total_loss
 
 
+def search_param_basic():
+    """Experiemnt on different hyper parameters."""
+    device = 'cpu'
+    hidden_dim, learning_rate, weight_decay = get_hyper_parameters()
+    print("hidden dimension from: {}\nlearning rate from: {}\nweight_decay from: {}".format(
+        hidden_dim, learning_rate, weight_decay
+    ))
+    best_model, best_stats = None, None
+    best_accuracy, best_lr, best_wd, best_hd = 0, 0, 0, 0
+    for hd, lr, wd in tqdm(itertools.product(hidden_dim, learning_rate, weight_decay),
+                           total=len(hidden_dim) * len(learning_rate) * len(weight_decay)):
+        net = FFNN(hd).to(device)
+        optim = get_optimizer(net, lr=lr, weight_decay=wd)
+        scheduler = torch.optim.lr_scheduler.LinearLR(optim, start_factor=1.0,
+                                                      end_factor=0, total_iters=40)
+        model, stats = train_model(net, train_loader, dev_loader, optim, scheduler,
+                                   num_epoch=40, patience=10, collect_cycle=500,
+                                   device=device, verbose=False)
+        # print accuracy
+        print(f"{(hd, lr, wd)}: {stats['accuracy']}")
+        # update best parameters if needed
+        if stats['accuracy'] > best_accuracy:
+            best_accuracy = stats['accuracy']
+            best_model, best_stats = model, stats
+            best_hd, best_lr, best_wd = hd, lr, wd
+    print("\n\nBest hidden dimension: {}, Best learning rate: {}, best weight_decay: {}".format(
+        best_hd, best_lr, best_wd))
+    print("Accuracy: {:.4f}".format(best_accuracy))
+    plot_loss(best_stats)
+    return best_model
+
+
 def plot_loss(stats):
     """Plot training loss and validation loss."""
     plt.plot(stats['train_loss_ind'],
@@ -347,5 +356,6 @@ if __name__ == "__main__":
     max_sent_length = 50
     max_word_length = 20
 
-    best_model, stats = train_model()
-    plot_loss(stats)
+    #best_model, stats = train_model()
+    # plot_loss(stats)
+    #basic_model = search_param_basic()

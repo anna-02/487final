@@ -12,7 +12,8 @@ import csv
 
 class WordAttNet(nn.Module):
     def __init__(self, word2vec_path, hidden_size=50):
-        super(WordAttNet, self).__init__()
+        super().__init__()
+        # super(WordAttNet, self).__init__()
         dict = pd.read_csv(filepath_or_buffer=word2vec_path, header=None,
                            sep=" ", quoting=csv.QUOTE_NONE).values[:, 1:]
         dict_len, embed_size = dict.shape
@@ -37,7 +38,6 @@ class WordAttNet(nn.Module):
         self.context_weight.data.normal_(mean, std)
 
     def forward(self, input, hidden_state):
-
         output = self.lookup(input)
         # feature output and hidden state output
         f_output, h_output = self.gru(output.float(), hidden_state)
@@ -45,6 +45,7 @@ class WordAttNet(nn.Module):
         output = matrix_mul(output, self.context_weight).permute(1, 0)
         output = F.softmax(output)
         output = element_wise_mul(f_output, output.permute(1, 0))
+
         return output, h_output
 
 

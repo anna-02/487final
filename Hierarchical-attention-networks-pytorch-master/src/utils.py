@@ -37,8 +37,8 @@ def matrix_mul(input, weight, bias=False):
             feature = feature + bias.expand(feature.size()[0], bias.size()[1])
         feature = torch.tanh(feature).unsqueeze(0)
         feature_list.append(feature)
-
-    return torch.cat(feature_list, 0).squeeze()
+    out = torch.cat(feature_list, 0).squeeze()
+    return torch.nan_to_num(out)
 
 
 def element_wise_mul(input1, input2):
@@ -49,8 +49,8 @@ def element_wise_mul(input1, input2):
         feature = feature_1 * feature_2
         feature_list.append(feature.unsqueeze(0))
     output = torch.cat(feature_list, 0)
-
-    return torch.sum(output, 0).unsqueeze(0)
+    out = torch.sum(output, 0).unsqueeze(0)
+    return torch.nan_to_num(out)
 
 
 def get_max_lengths(data_path):
