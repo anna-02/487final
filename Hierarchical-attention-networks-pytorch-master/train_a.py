@@ -75,9 +75,9 @@ def get_hyper_parameters():
     hidden_dim, lr, weight_decay = [], [], []
 
     ######## TODO: try different lr, weight_decay, hidden_dim ##########
-    hidden_dim = [512]
-    lr = [0.0003]
-    weight_decay = [1e-5]
+    hidden_dim = [50]
+    lr = [1e-3, 1e-4]
+    weight_decay = [1e-5, 1e-4]
     ######################### End of your code #########################
 
     return hidden_dim, lr, weight_decay
@@ -103,8 +103,8 @@ def train_model(net, training_generator, val_generator, batch_size, optim):
     # Initialize:
     # -------------------------------------
 
-    num_epoch = 10
-    patience = 5
+    num_epoch = 40
+    patience = 20
     collect_cycle = 30
     device = 'cpu'
     verbose = True
@@ -146,8 +146,8 @@ def train_model(net, training_generator, val_generator, batch_size, optim):
             net._init_hidden_state()
             logits = net(reply, context)
 
-            # if(num_itr == 1):
-            print("logits", logits)
+            if(num_itr == 1):
+                print("logits", logits)
             # print(logits.shape)
 
             flogits = logits[:, 1].flatten()
@@ -280,9 +280,9 @@ def get_performance(net, loss_fn, data_loader, device, prediction_file='predicti
             #pred = torch.stack(pred)
 
             #pred = torch.stack(pred)
-            print("tflogits", t_flogits)
-            print("pedictions:", pred)
-            print("labels:", labels)
+            # print("tflogits", t_flogits)
+            # print("pedictions:", pred)
+            # print("labels:", labels)
 
             ###################### End of your code ######################
 
@@ -306,7 +306,7 @@ def get_performance(net, loss_fn, data_loader, device, prediction_file='predicti
     return accuracy, precision, recall, f1, total_loss
 
 
-def search_param_basic():
+def search_param_basic(train_loader, dev_loader):
     """Experiemnt on different hyper parameters."""
     device = 'cpu'
     hidden_dim, learning_rate, weight_decay = get_hyper_parameters()
@@ -317,13 +317,12 @@ def search_param_basic():
     best_accuracy, best_lr, best_wd, best_hd = 0, 0, 0, 0
     for hd, lr, wd in tqdm(itertools.product(hidden_dim, learning_rate, weight_decay),
                            total=len(hidden_dim) * len(learning_rate) * len(weight_decay)):
-        net = FFNN(hd).to(device)
+        net = FFNN(hd, 8, 20).to(device)
         optim = get_optimizer(net, lr=lr, weight_decay=wd)
         scheduler = torch.optim.lr_scheduler.LinearLR(optim, start_factor=1.0,
                                                       end_factor=0, total_iters=40)
-        model, stats = train_model(net, train_loader, dev_loader, optim, scheduler,
-                                   num_epoch=40, patience=10, collect_cycle=500,
-                                   device=device, verbose=False)
+        model, stats = train_model(
+            net, train_loader, dev_loader, 8, optim)
         # print accuracy
         print(f"{(hd, lr, wd)}: {stats['accuracy']}")
         # update best parameters if needed
