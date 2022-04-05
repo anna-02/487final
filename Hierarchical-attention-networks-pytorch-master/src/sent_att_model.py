@@ -8,7 +8,7 @@ from src.utils import matrix_mul, element_wise_mul
 
 
 class SentAttNet(nn.Module):
-    def __init__(self, sent_hidden_size=50, word_hidden_size=50, num_classes=14):
+    def __init__(self, sent_hidden_size, word_hidden_size=50, num_classes=14):
         super().__init__()
         # super(SentAttNet, self).__init__()
         self.sent_weight = nn.Parameter(torch.Tensor(

@@ -18,11 +18,11 @@ test_set = 'test.csv'
 dev_set = 'dev.csv'
 word2vec_path = 'glove.6B.50d.txt'
 
-batch_size = 8
-hidden_layer_size = 128
+batch_size = 64
+hidden_layer_size = 128     # hidden layer size for BOTH word and sentence
 
+# device = 'cuda' if torch.cuda.is_available() else 'cpu'
 device = 'cpu'
-
 training_params = {"batch_size": batch_size,
                    "shuffle": True,
                    "drop_last": True}
@@ -53,9 +53,9 @@ net = FFNN(hidden_layer_size, batch_size, max_word_length)
 optim = get_optimizer(net, lr=1e-3, weight_decay=0)
 net.to(device)
 
-# best_model, stats = train_a.train_model(
-# net, training_generator, training_generator, batch_size, optim)
+best_model, stats = train_a.train_model(
+    net, training_generator, training_generator, batch_size, optim)
 
-best_model, stats = train_a.search_param_basic(
-    training_generator, dev_generator)
+# best_model, stats = train_a.search_param_basic(
+#     training_generator, dev_generator, batch_size)
 plot_loss(stats)

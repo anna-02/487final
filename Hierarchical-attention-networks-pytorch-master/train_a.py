@@ -106,7 +106,7 @@ def train_model(net, training_generator, val_generator, batch_size, optim):
     num_epoch = 40
     patience = 20
     collect_cycle = 30
-    device = 'cpu'
+    # device = 'cpu'
     verbose = True
     train_loss, train_loss_ind, val_loss, val_loss_ind = [], [], [], []
     num_itr = 0
@@ -114,8 +114,8 @@ def train_model(net, training_generator, val_generator, batch_size, optim):
     num_bad_epoch = 0
 
     torch.manual_seed(0)
-
-    #device = 'cuda'
+    # TODO: add in device statement!!!
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     np.random.seed(0)
     if torch.cuda.is_available():
@@ -253,6 +253,7 @@ def get_performance(net, loss_fn, data_loader, device, prediction_file='predicti
             pred = None  # predictions for this battch
 
             ######## TODO: calculate loss, get predictions #########
+            # TODO: add back in for collab
             # context = [i.to(device) for i in context]
             # reply = [i.to(device) for i in reply]
             # labels = [i.to(device) for i in labels]
@@ -281,8 +282,8 @@ def get_performance(net, loss_fn, data_loader, device, prediction_file='predicti
 
             #pred = torch.stack(pred)
             # print("tflogits", t_flogits)
-            # print("pedictions:", pred)
-            # print("labels:", labels)
+            # print("len pedictions:", len(pred))
+            # print("len labels:", len(labels))
 
             ###################### End of your code ######################
 
@@ -295,9 +296,9 @@ def get_performance(net, loss_fn, data_loader, device, prediction_file='predicti
 
     accuracy = (y_true == y_pred).sum() / y_pred.shape[0]
     total_loss = sum(total_loss) / len(total_loss)
-    f1 = f1_score(y_true, y_pred, average='micro')
-    precision = precision_score(y_true, y_pred, average='micro')
-    recall = recall_score(y_true, y_pred, average='micro')
+    f1 = f1_score(y_true, y_pred, average='macro')
+    precision = precision_score(y_true, y_pred, average='macro')
+    recall = recall_score(y_true, y_pred, average='macro')
 
     # save predictions
     if prediction_file is not None:
@@ -306,9 +307,10 @@ def get_performance(net, loss_fn, data_loader, device, prediction_file='predicti
     return accuracy, precision, recall, f1, total_loss
 
 
-def search_param_basic(train_loader, dev_loader):
+def search_param_basic(train_loader, dev_loader, batch_size):
     """Experiemnt on different hyper parameters."""
-    device = 'cpu'
+
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
     hidden_dim, learning_rate, weight_decay = get_hyper_parameters()
     print("hidden dimension from: {}\nlearning rate from: {}\nweight_decay from: {}".format(
         hidden_dim, learning_rate, weight_decay
@@ -322,7 +324,7 @@ def search_param_basic(train_loader, dev_loader):
         scheduler = torch.optim.lr_scheduler.LinearLR(optim, start_factor=1.0,
                                                       end_factor=0, total_iters=40)
         model, stats = train_model(
-            net, train_loader, dev_loader, 8, optim)
+            net, train_loader, dev_loader, batch_size, optim)
         # print accuracy
         print(f"{(hd, lr, wd)}: {stats['accuracy']}")
         # update best parameters if needed

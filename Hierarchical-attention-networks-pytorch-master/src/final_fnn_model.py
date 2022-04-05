@@ -15,8 +15,8 @@ class FFNN(nn.Module):
 
     def __init__(self, hidden_layer_size, batch_size, max_word_length):
         super().__init__()
-        self.word_hidden_size = 50
-        self.sent_hidden_size = 50
+        self.word_hidden_size = hidden_layer_size
+        self.sent_hidden_size = hidden_layer_size
         cat_size = (self.word_hidden_size) + (self.sent_hidden_size)
         self.batch_size = batch_size
         self.num_classes = 2
