@@ -75,9 +75,9 @@ def get_hyper_parameters():
     hidden_dim, lr, weight_decay = [], [], []
 
     ######## TODO: try different lr, weight_decay, hidden_dim ##########
-    hidden_dim = [50]
-    lr = [1e-3, 1e-4]
-    weight_decay = [1e-5, 1e-4]
+    hidden_dim = [128]
+    lr = [1e-3]
+    weight_decay = [1e-5]
     ######################### End of your code #########################
 
     return hidden_dim, lr, weight_decay
@@ -261,7 +261,7 @@ def get_performance(net, loss_fn, data_loader, device, prediction_file='predicti
             net._init_hidden_state(len(labels))
             logits = net(reply, context)
             # print("logits ", logits)
-            t_flogits = logits[:, 1].flatten()
+            # t_flogits = logits[:, 1].flatten()
             # t_flogits = 1 - t_flogits
 
             ns_labels = 1-labels
@@ -274,16 +274,17 @@ def get_performance(net, loss_fn, data_loader, device, prediction_file='predicti
             #sig = nn.Sigmoid()
             #print("***", t_flogits)
             # probs = logits.cpu()
-            pred = torch.round(t_flogits)
+            pred = torch.argmax(logits, dim=1)
 
             # TODO: ADD BACK IN FOR COLLAB
             #pred = [i.to(device)for i in pred]
             #pred = torch.stack(pred)
 
             #pred = torch.stack(pred)
-            # print("tflogits", t_flogits)
-            # print("len pedictions:", len(pred))
-            # print("len labels:", len(labels))
+
+            # print("logits", logits)
+            # print("pedictions:", pred)
+            # print("labels:", labels)
 
             ###################### End of your code ######################
 
@@ -307,7 +308,7 @@ def get_performance(net, loss_fn, data_loader, device, prediction_file='predicti
     return accuracy, precision, recall, f1, total_loss
 
 
-def search_param_basic(train_loader, dev_loader, batch_size):
+def search_param_basic(train_loader, dev_loader, batch_size, max_word_length, max_sent_length):
     """Experiemnt on different hyper parameters."""
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -319,7 +320,8 @@ def search_param_basic(train_loader, dev_loader, batch_size):
     best_accuracy, best_lr, best_wd, best_hd = 0, 0, 0, 0
     for hd, lr, wd in tqdm(itertools.product(hidden_dim, learning_rate, weight_decay),
                            total=len(hidden_dim) * len(learning_rate) * len(weight_decay)):
-        net = FFNN(hd, 8, 20).to(device)
+
+        net = FFNN(hd, batch_size, max_word_length, max_sent_length).to(device)
         optim = get_optimizer(net, lr=lr, weight_decay=wd)
         scheduler = torch.optim.lr_scheduler.LinearLR(optim, start_factor=1.0,
                                                       end_factor=0, total_iters=40)

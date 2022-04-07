@@ -60,7 +60,7 @@ def get_max_lengths(data_path):
         reader = csv.reader(csv_file, quotechar='"')
         for idx, line in enumerate(reader):
             text = ""
-            for tx in line[1:]:
+            for tx in word_tokenize(line[1]):
                 text += tx.lower()
                 text += " "
             sent_list = sent_tokenize(text)

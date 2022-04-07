@@ -19,7 +19,7 @@ class SentAttNet(nn.Module):
 
         self.gru = nn.GRU(2 * word_hidden_size,
                           sent_hidden_size, bidirectional=True)
-        # self.fc = nn.Linear(2 * sent_hidden_size, num_classes)
+        #self.fc = nn.Linear(2 * sent_hidden_size, num_classes)
         # self.sent_softmax = nn.Softmax()  # maybe comment out
         # self.fc_softmax = nn.Softmax()  # x
         self._create_weights(mean=0.0, std=0.05)
@@ -30,15 +30,13 @@ class SentAttNet(nn.Module):
 
     def forward(self, input, hidden_state):
         f_output, h_output = self.gru(input, hidden_state)
-
         output = matrix_mul(f_output, self.sent_weight, self.sent_bias)
         #print("first out size", output.shape)
         output = matrix_mul(output, self.context_weight).permute(1, 0)
         #print("sec out size", output.shape)
         # output = F.softmax(output)
-        # output = element_wise_mul(f_output, output.permute(1, 0)).squeeze(0)
-        # output = self.fc(output)
-
+        # output = element_wise_mul(
+        #     f_output, output.permute(1, 0)).squeeze(0)
         return output, h_output
 
 

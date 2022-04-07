@@ -31,9 +31,10 @@ test_params = {"batch_size": batch_size,
                "drop_last": False}
 
 
-# max_word_length, max_sent_length = get_max_lengths(train_set)
-max_word_length = 20
-max_sent_length = 50
+max_word_length, max_sent_length = get_max_lengths(train_set)
+#max_word_length = 50
+max_sent_length = 4
+print("word l, sent l", max_word_length, max_sent_length)
 training_set = MyDataset(
     train_set, word2vec_path, max_sent_length, max_word_length)
 training_generator = DataLoader(training_set, **training_params)
@@ -48,14 +49,14 @@ testing_set = MyDataset(test_set, word2vec_path,
                         max_sent_length, max_word_length)
 test_generator = DataLoader(test_set, **test_params)
 
-net = FFNN(hidden_layer_size, batch_size, max_word_length)
+net = FFNN(hidden_layer_size, batch_size, max_word_length, max_sent_length)
 
 optim = get_optimizer(net, lr=1e-3, weight_decay=0)
 net.to(device)
 
-best_model, stats = train_a.train_model(
-    net, training_generator, training_generator, batch_size, optim)
+# best_model, stats = train_a.train_model(
+#     net, training_generator, training_generator, batch_size, optim)
 
-# best_model, stats = train_a.search_param_basic(
-#     training_generator, dev_generator, batch_size)
+best_model, stats = train_a.search_param_basic(
+    training_generator, dev_generator, batch_size, max_word_length, max_sent_length)
 plot_loss(stats)
