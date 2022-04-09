@@ -13,6 +13,9 @@ class MyDataset(Dataset):
 
     def __init__(self, data_path, dict_path, max_length_sentences=30, max_length_word=35):
         super(MyDataset, self).__init__()
+        self.contexts = []
+        self.replies = []
+        self.labels = []
 
         replies, contexts, labels = [], [], []
         with open(data_path) as read_obj:
@@ -32,13 +35,13 @@ class MyDataset(Dataset):
                     context += " "
 
                 label = int(line[0])
-                contexts.append(context)
-                replies.append(reply)
-                labels.append(label)
+                self.contexts.append(context)
+                self.replies.append(reply)
+                self.labels.append(label)
 
-        self.contexts = contexts
-        self.replies = replies
-        self.labels = labels
+        # self.contexts = contexts
+        # self.replies = replies
+        # self.labels = labels
         self.dict = pd.read_csv(filepath_or_buffer=dict_path, header=None, sep=" ", quoting=csv.QUOTE_NONE,
                                 usecols=[0]).values
         self.dict = [word[0] for word in self.dict]

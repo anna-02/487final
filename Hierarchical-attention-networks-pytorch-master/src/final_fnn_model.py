@@ -41,12 +41,11 @@ class FFNN(nn.Module):
         self.context._init_hidden_state(batch_size)
 
     def forward(self, reply_in, context_in):
-        rep_out = self.reply(reply_in)  # .requires_grad_(True)
-        # print("rep_out", rep_out.shape)
-        cont_out = self.context(context_in)  # .requires_grad_(True)
+        rep_out = self.reply(reply_in).requires_grad_(True)
+        cont_out = self.context(context_in).requires_grad_(True)
         x = torch.cat((cont_out, rep_out), dim=1).requires_grad_(True)
         # print("x", x.shape)
         x = self.fc(x)
-        output = F.softmax(x)
-        # print("X is", x)
+        output = F.softmax(x)  # , dim=1
+        # print("Xoutput is", output)
         return output

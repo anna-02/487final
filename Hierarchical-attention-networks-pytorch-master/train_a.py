@@ -13,6 +13,8 @@ from src.dataset import MyDataset
 from src.final_fnn_model import FFNN
 from tensorboardX import SummaryWriter
 import argparse
+import csv
+from csv import writer
 import shutil
 import itertools
 from nltk.tokenize import word_tokenize
@@ -28,6 +30,7 @@ from torch.utils.data import DataLoader
 from sklearn.metrics import f1_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
+import time
 
 
 def get_loss_fn():
@@ -102,16 +105,28 @@ def train_model(net, training_generator, val_generator, batch_size, optim):
     """
     # Initialize:
     # -------------------------------------
-
+    print("NET", net)
     num_epoch = 40
     patience = 20
     collect_cycle = 30
     # device = 'cpu'
     verbose = True
     train_loss, train_loss_ind, val_loss, val_loss_ind = [], [], [], []
+    val_accuracy, val_precision, val_recall, val_f1 = [], [], [], []
     num_itr = 0
     best_model, best_accuracy = None, 0
     num_bad_epoch = 0
+
+    t = time.localtime()
+    current_time = time.strftime("%H_%M_%S", t)
+    fname = current_time + "_val_output.csv"
+    # SET UP OUTPUT FILE
+    fields = ['val_loss', 'val_accuracy',
+              'val_f1', 'val_precision', 'val_recall']
+    with open(fname, 'a') as f_obj:
+        writer_obj = writer(f_obj)
+        writer_obj.writerow(fields)
+        f_obj.close()
 
     torch.manual_seed(0)
     # TODO: add in device statement!!!
@@ -130,6 +145,7 @@ def train_model(net, training_generator, val_generator, batch_size, optim):
     for epoch in tqdm(range(num_epoch)):
         # Training:
         net.train()
+        torch.autograd.set_detect_anomaly(True)
         for iter, (reply, context, labels) in enumerate(tqdm(training_generator)):
             num_itr += 1
             loss = None
@@ -141,6 +157,8 @@ def train_model(net, training_generator, val_generator, batch_size, optim):
             # print("reply", reply)
             # print("context", context)
             # print("label", labels)
+            # print("REPLY", reply)
+            # print("CONTEXT", context)
 
             optim.zero_grad()
             net._init_hidden_state()
@@ -150,8 +168,8 @@ def train_model(net, training_generator, val_generator, batch_size, optim):
                 print("logits", logits)
             # print(logits.shape)
 
-            flogits = logits[:, 1].flatten()
-            flogits = 1 - flogits
+            # flogits = logits[:, 1].flatten()
+            # flogits = 1 - flogits
 
             #flogits = flogits.float()
             # print("fLOGITS*******", flogits.shape)
@@ -167,7 +185,7 @@ def train_model(net, training_generator, val_generator, batch_size, optim):
             optim.step()
 
             # for p in net.parameters():
-            #  print(p.grad)
+            # print(p.grad)
 
             ###################### End of your code ######################
 
@@ -184,8 +202,22 @@ def train_model(net, training_generator, val_generator, batch_size, optim):
         # Validation:
         accuracy, precision, recall, f1, loss = get_performance(
             net, loss_fn, val_generator, device)
+
         val_loss.append(loss)
         val_loss_ind.append(num_itr)
+        val_accuracy.append(accuracy)
+        val_precision.append(precision)
+        val_recall.append(recall)
+        val_f1.append(f1)
+
+        # append files to csv
+        fields = [loss, val_accuracy,
+                  val_f1, val_precision, val_recall]
+        with open(fname, 'a') as f_obj:
+            writer_obj = writer(f_obj)
+            writer_obj.writerow(fields)
+            f_obj.close()
+
         if verbose:
             print("Validation accuracy: {:.4f}".format(accuracy))
             print("Validation precision: {:.4f}".format(precision))
@@ -260,6 +292,7 @@ def get_performance(net, loss_fn, data_loader, device, prediction_file='predicti
 
             net._init_hidden_state(len(labels))
             logits = net(reply, context)
+
             # print("logits ", logits)
             # t_flogits = logits[:, 1].flatten()
             # t_flogits = 1 - t_flogits
@@ -337,6 +370,7 @@ def search_param_basic(train_loader, dev_loader, batch_size, max_word_length, ma
     print("\n\nBest hidden dimension: {}, Best learning rate: {}, best weight_decay: {}".format(
         best_hd, best_lr, best_wd))
     print("Accuracy: {:.4f}".format(best_accuracy))
+
     plot_loss(best_stats)
     return best_model
 

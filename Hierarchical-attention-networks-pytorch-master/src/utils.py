@@ -27,14 +27,21 @@ def get_evaluation(y_true, y_prob, list_metrics):
 
 
 def matrix_mul(input, weight, bias=False):
+    # print("****INSIDE MATRIX MULT INPUT IS", input)
+    if bias is not False:
+        bias = torch.nan_to_num(bias)
+    #print("****INSIDE MATRIX MULT BIAS IS", bias)
     feature_list = []
     for feature in input:
         #print("feature:", len(feature.shape))
         if len(feature.shape) == 1:
             continue
         feature = torch.mm(feature, weight)
+
+        # print("****INSIDE MATRIX MULT FEATURE IS", feature)
         if isinstance(bias, torch.nn.parameter.Parameter):
             feature = feature + bias.expand(feature.size()[0], bias.size()[1])
+        # print("****INSIDE MATRIX MULT FEATURE IS", feature)
         feature = torch.tanh(feature).unsqueeze(0)
         feature_list.append(feature)
     out = torch.cat(feature_list, 0).squeeze()

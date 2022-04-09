@@ -12,8 +12,8 @@ import csv
 
 class WordAttNet(nn.Module):
     def __init__(self, word2vec_path, hidden_size=50):
-        super().__init__()
-        # super(WordAttNet, self).__init__()
+        # super().__init__()
+        super(WordAttNet, self).__init__()
         dict = pd.read_csv(filepath_or_buffer=word2vec_path, header=None,
                            sep=" ", quoting=csv.QUOTE_NONE).values[:, 1:]
         dict_len, embed_size = dict.shape
@@ -33,7 +33,6 @@ class WordAttNet(nn.Module):
         self._create_weights(mean=0.0, std=0.05)
 
     def _create_weights(self, mean=0.0, std=0.05):
-
         self.word_weight.data.normal_(mean, std)
         self.context_weight.data.normal_(mean, std)
 
@@ -44,8 +43,9 @@ class WordAttNet(nn.Module):
         output = matrix_mul(f_output, self.word_weight, self.word_bias)
         output = matrix_mul(output, self.context_weight).permute(1, 0)
         output = F.softmax(output)
+        # print("WC OUTPUT SM:", output)
         output = element_wise_mul(f_output, output.permute(1, 0))
-
+        # print("WC OUTPUT EMUL:", output)
         return output, h_output
 
 
