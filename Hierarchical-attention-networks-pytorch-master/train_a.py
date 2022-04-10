@@ -211,8 +211,8 @@ def train_model(net, training_generator, val_generator, batch_size, optim):
         val_f1.append(f1)
 
         # append files to csv
-        fields = [loss, val_accuracy,
-                  val_f1, val_precision, val_recall]
+        fields = [loss, accuracy,
+                  f1, precision, recall]
         with open(fname, 'a') as f_obj:
             writer_obj = writer(f_obj)
             writer_obj.writerow(fields)
