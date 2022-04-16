@@ -1,0 +1,6 @@
+val_loss,val_accuracy,val_f1,val_precision,val_recall
+0.38563956385073456,tensor(0.9993),"{'S_f1': 0.0, 'NS_f1': 0.999660210669385}","{'S_precision': 0.0, 'NS_precision': 0.9993206521739131}","{'S_recall': 0.0, 'NS_recall': 1.0}"
+0.35626958116241125,tensor(0.9993),"{'S_f1': 0.0, 'NS_f1': 0.999660210669385}","{'S_precision': 0.0, 'NS_precision': 0.9993206521739131}","{'S_recall': 0.0, 'NS_recall': 1.0}"
+0.34280597127002216,tensor(0.9993),"{'S_f1': 0.0, 'NS_f1': 0.999660210669385}","{'S_precision': 0.0, 'NS_precision': 0.9993206521739131}","{'S_recall': 0.0, 'NS_recall': 1.0}"
+0.3354183053192885,tensor(0.9993),"{'S_f1': 0.0, 'NS_f1': 0.999660210669385}","{'S_precision': 0.0, 'NS_precision': 0.9993206521739131}","{'S_recall': 0.0, 'NS_recall': 1.0}"
+0.3308539099019507,tensor(0.9993),"{'S_f1': 0.0, 'NS_f1': 0.999660210669385}","{'S_precision': 0.0, 'NS_precision': 0.9993206521739131}","{'S_recall': 0.0, 'NS_recall': 1.0}"

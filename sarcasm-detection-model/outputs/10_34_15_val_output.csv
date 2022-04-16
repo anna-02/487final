@@ -1,0 +1,2 @@
+val_loss,val_accuracy,val_f1,val_precision,val_recall
+0.5121851120239649,tensor(0.8113),"{'S_f1': 0.0, 'NS_f1': 0.8958195089581951}","{'S_precision': 0.0, 'NS_precision': 0.8112980769230769}","{'S_recall': 0.0, 'NS_recall': 1.0}"
