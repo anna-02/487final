@@ -1,5 +1,5 @@
 # 487final
-# Sarcasm Detection using Hierarchal Attention Networks with Context and Reply
+# Sarcasm Detection on Reddit using Hierarchal Attention Networks with Context and Reply
 
 This is a final course project for EECS 487 at the University of Michigan, by Anna Ablove (<aablove@umich.edu>) and Dan Choe (<danchoe@umich.edu>).
 
