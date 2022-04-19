@@ -1,5 +1,6 @@
 """
 Anna Ablove <aablove@umich.edu>
+Dan Choe <danchoe@umich.edu>
 Adapted from code by: Viet Nguyen <nhviet1009@gmail.com>
 """
 import numpy as np

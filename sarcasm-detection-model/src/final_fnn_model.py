@@ -1,5 +1,6 @@
 """
-Anna Ablove, aablove@umich.edu
+Anna Ablove <aablove@umich.edu>
+Dan Choe <danchoe@umich.edu>
 Adapted from code from EECS 487 at University of Michigan
 """
 import torch

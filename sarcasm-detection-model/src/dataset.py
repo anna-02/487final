@@ -1,6 +1,7 @@
 """
-Anna Ablove
-Adapted from code authored by: Viet Nguyen <nhviet1009@gmail.com>
+Anna Ablove <aablove@umich.edu>
+Dan Choe <danchoe@umich.edu>
+Adapted from code by: Viet Nguyen <nhviet1009@gmail.com>
 """
 import pandas as pd
 from torch.utils.data.dataset import Dataset
