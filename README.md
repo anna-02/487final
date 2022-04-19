@@ -14,7 +14,7 @@ This project uses the SARC dataset from A Large Self-Annotated Corpus for Sarcas
 "487final/sarcasm-detection-model" includes processing_basic.ipynb. 
 processing_basic.ipynb generates our training/validation/test splits.
 
-**Running the Model***
+**Running the Model**
 
 In "487final/sarcasm-detection-model", run_model.py trains the hierarchical attention with context and reply using train.csv, selects the best hyperparameters using dev.csv, and tests the model using test.csv.
 
