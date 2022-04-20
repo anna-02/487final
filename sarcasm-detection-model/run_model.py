@@ -40,7 +40,7 @@ max_word_length, max_sent_length = get_max_lengths(train_set)
 #max_word_length = 50
 max_sent_length = 4
 
-print("word l, sent l", max_word_length, max_sent_length)
+# print("word l, sent l", max_word_length, max_sent_length)
 training_set = MyDataset(
     train_set, word2vec_path, max_sent_length, max_word_length)
 training_generator = DataLoader(training_set, **training_params)
@@ -60,9 +60,28 @@ net = FFNN(hidden_layer_size, batch_size, max_word_length, max_sent_length)
 optim = get_optimizer(net, lr=1e-3, weight_decay=1e-5)
 net.to(device)
 
+# NOTE: choose with lines to run
+
 # best_model, stats = train_a.train_model(
 #     net, training_generator, training_generator, batch_size, optim)
 
+# if doing training run, hyperparam search
+
 best_model, stats = train_a.search_param_basic(
     training_generator, dev_generator, batch_size, max_word_length, max_sent_length)
+
+
+# if doing testing run
+
 plot_loss(stats)
+
+loss_fn = train_a.get_loss_fn()
+
+accuracy, precision, recall, f1, loss = train_a.get_performance(
+    best_model, loss_fn, test_generator, device)
+
+print("Validation accuracy: {:.4f}".format(accuracy))
+print("Validation precision: ", precision)
+print("Validation recall: ", recall)
+print("Validation f1: ", f1)
+print("Validation loss: {:.4f}".format(loss))
