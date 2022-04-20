@@ -12,7 +12,7 @@ This project uses https://github.com/uvipen/Hierarchical-attention-networks-pyto
 This project uses the SARC dataset from A Large Self-Annotated Corpus for Sarcasm and 50 dimensional glove word vectors from https://www.kaggle.com/datasets/watts2/glove6b50dtxt.
 
 "487final/sarcasm-detection-model" includes processing_basic.ipynb. 
-processing_basic.ipynb generates our training/validation/test splits.
+processing_basic.ipynb generates our data splits.
 
 **Running the Model**
 
